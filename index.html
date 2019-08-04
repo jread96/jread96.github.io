@@ -2,7 +2,46 @@
 <h1>Does Engine Cylinder Quantity Affect MPG?</h1>
 <h3>Click on the checkboxes to find out!</h3>
 <script src='https://d3js.org/d3.v5.min.js'></script>
-<style> circle {fill: lightblue; stroke: black;} </style>
+<style> circle {fill: lightblue; stroke: black;}
+  div {
+    overflow: hidden;
+    white-space: nowrap;
+    left: 50px;
+}
+  p {
+      overflow: hidden;
+      white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  #circle_small {
+      width: 8px;
+      height: 8px;
+      -webkit-border-radius:4px;
+      -moz-border-radius: 4px;
+      border-radius: 4px;
+      background: red;
+      display: inline-block;
+  }
+      #circle_medium {
+      width: 18px;
+      height: 18px;
+      -webkit-border-radius:9px;
+      -moz-border-radius: 9px;
+      border-radius: 9px;
+      background: orange;
+      display: inline-block;
+
+    }  #circle_large {
+      width: 28px;
+      height: 28px;
+      -webkit-border-radius:14px;
+      -moz-border-radius: 14px;
+      border-radius: 14px;
+      background: purple;
+      display: inline-block;
+    }
+</style>
 <body onload='init()'>
 <svg width=300 height=300>
 </svg>
@@ -55,11 +94,27 @@ async function init() {
   graph1.attr("transform", "translate("+margin+","+margin+")")
   .call(d3.axisLeft(y).tickValues([10,20,50,100]).tickFormat(d3.format("~s")));
 
+
    graph2.attr("transform", "translate("+margin+","+(height+margin)+")")
-  .call(d3.axisBottom(x).tickValues([10,20,50,100]).tickFormat(d3.format("~s")));  
+  .call(d3.axisBottom(x).tickValues([10,20,50,100]).tickFormat(d3.format("~s")));
+
+   document.getElementById("small").style.visibility = "hidden";
+   document.getElementById("circle_small").style.visibility = "hidden";
+   document.getElementById("medium").style.visibility = "hidden";
+   document.getElementById("circle_medium").style.visibility = "hidden";
+   document.getElementById("large").style.visibility = "hidden";
+   document.getElementById("circle_large").style.visibility = "hidden";
 }
 
 </script>
+<div left=50px position=absolute>
+    <p style="padding-left: 50px;"></p>
+<div id="circle_small"></div><p id='small' style="padding-right: 10px; padding-left: 4px;">Small</p>
+<div id="circle_medium"></div><p id='medium' style="padding-right: 10px; padding-left: 4px;">Medium</p>
+<div id="circle_large"></div><p id='large' style="padding-right: 10px; padding-left: 4px;">Large</p>
+    
+</div>
+<h6>City MPG (horizontal) vs Highway MPG (vertical)</h6>
 <br>
 <input type="checkbox" name="small" value="0-4" onclick="color_circles('small')">Small (0-4
 cylinders)<br>
@@ -74,7 +129,7 @@ var clicked = [false, false, false];
 function color_circles(size) {
     if (size == 'small') {
         clicked[0] = !clicked[0];
-        apply_color(clicked);
+        apply_color(clicked);     
   }
     else if (size == 'medium') {
         clicked[1] = !clicked[1];
@@ -91,37 +146,48 @@ function apply_color(clicked) {
         datapoints.selectAll('circle')
             .filter(function(d) {return d.radius <= 4})
             .style("fill", "red");
+    document.getElementById("small").style.visibility = "visible";
+    document.getElementById("circle_small").style.visibility = "visible";
+        
     }
     else {
          datapoints.selectAll('circle')
          .filter(function(d) {return d.radius <= 4})
          .style("fill", "lightblue");
+            document.getElementById("small").style.visibility = "hidden";
+            document.getElementById("circle_small").style.visibility = "hidden";
     }
 
     if (clicked[1]) {
         datapoints.selectAll('circle')
             .filter(function(d) {return d.radius > 4 && d.radius <= 8})
             .style("fill", "orange");
+            document.getElementById("medium").style.visibility = "visible";
+            document.getElementById("circle_medium").style.visibility = "visible";
     }
     else {
          datapoints.selectAll('circle')
          .filter(function(d) {return d.radius > 4 && d.radius <= 8})
          .style("fill", "lightblue");
+            document.getElementById("medium").style.visibility = "hidden";
+            document.getElementById("circle_medium").style.visibility = "hidden";
     }
 
     if (clicked[2]) {
         datapoints.selectAll('circle')
             .filter(function(d) {return d.radius > 8})
             .style("fill", "purple");
+        document.getElementById("large").style.visibility = "visible";
+        document.getElementById("circle_large").style.visibility = "visible";
     }
     else {
          datapoints.selectAll('circle')
          .filter(function(d) {return d.radius > 8})
          .style("fill", "lightblue");
+         document.getElementById("large").style.visibility = "hidden";
+         document.getElementById("circle_large").style.visibility = "hidden";
     }
 }
-
-
 
 </script>
 </body>
