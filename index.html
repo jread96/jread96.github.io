@@ -1,86 +1,129 @@
-<!DOCTYPE html>
 <html>
-<body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub</p>
-<script src="https://d3js.org/d3.v4.min.js"></script>
+<h1>Does Engine Cylinder Quantity Affect MPG?</h1>
+<h3>Click on the checkboxes to find out!</h3>
+<script src='https://d3js.org/d3.v5.min.js'></script>
+<style> circle {fill: lightblue; stroke: black;} </style>
+<body onload='init()'>
+<svg width=300 height=300>
+</svg>
 <script>
-    var san_jose = [2362, 2360,	2467, 2571,	2955, 3290,	3279, 3422,	3458]
-    var seattle = [1742, 1726,	1773, 1983,	2136, 2372,	2483, 2544,	2509]
-    var austin = [1303,	1388, 1458,	1581, 1692,	1768, 1771,	1756, 1793]
-    var raleigh = [1191, 1208,	1219, 1266,	1316, 1347,	1380, 1402,	1443]
+var datapoints;
+async function init() {
+  var proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+  var targetUrl = 'http://flunky.github.io/cars2017.csv';
+  const data = await d3.csv(proxyUrl + targetUrl);
 
-// set the dimensions and margins of the graph
-var margin = {top: 20, right: 20, bottom: 30, left: 50},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+  var circleData = [];
 
-// parse the date / time
-var parseTime = d3.timeParse("%d-%b-%y");
+  for (i = 0; i < data.length; i++) {
+    circleData.push({"cx": parseInt(data[i].AverageCityMPG), "cy":
+        parseInt(data[i].AverageHighwayMPG), "radius": 2 +
+        parseInt(data[i].EngineCylinders)});
+  }
 
-// set the ranges
-var x = d3.scaleTime().range([0, width]);
-var y = d3.scaleLinear().range([height, 0]);
+  var margin = 50;
+  var height = 200;
+  var width = 200;
 
-// define the 1st line
-var valueline = d3.line()
-    .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.close); });
+  var x = d3.scaleLog()
+  .domain([10,150])
+  .range([0,200])
+  .base(10);
 
-// define the 2nd line
-var valueline2 = d3.line()
-    .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.open); });
+  var y = d3.scaleLog()
+  .domain([10,150])
+  .range([200,0])
+  .base(10);
 
-// append the svg obgect to the body of the page
-// appends a 'group' element to 'svg'
-// moves the 'group' element to the top left margin
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
+  var points = d3.select("svg").append("g");
+  datapoints = points;
 
-// Get the data
-d3.csv("data2.csv", function(error, data) {
-  if (error) throw error;
+  var graph1 = d3.select("svg").append("g");
+ 
+  var graph2 = d3.select("svg").append("g");
 
-  // format the data
-  data.forEach(function(d) {
-      d.date = parseTime(d.date);
-      d.close = +d.close;
-      d.open = +d.open;
-  });
+  points
+  .selectAll('circle')
+  .data(circleData)
+  .enter()
+  .append('circle')
+  .attr("cx", function(d,i){return x(d.cx);})
+  .attr("cy", function(d,i){return y(d.cy);})
+  .attr("r", function(d){return d.radius;})
+  .attr("transform", "translate("+margin+","+margin+")");
 
-  // Scale the range of the data
-  x.domain(d3.extent(data, function(d) { return d.date; }));
-  y.domain([0, d3.max(data, function(d) {
-	  return Math.max(d.close, d.open); })]);
+  graph1.attr("transform", "translate("+margin+","+margin+")")
+  .call(d3.axisLeft(y).tickValues([10,20,50,100]).tickFormat(d3.format("~s")));
 
-  // Add the valueline path.
-  svg.append("path")
-      .data([data])
-      .attr("class", "line")
-      .attr("d", valueline);
+   graph2.attr("transform", "translate("+margin+","+(height+margin)+")")
+  .call(d3.axisBottom(x).tickValues([10,20,50,100]).tickFormat(d3.format("~s")));  
+}
 
-  // Add the valueline2 path.
-  svg.append("path")
-      .data([data])
-      .attr("class", "line")
-      .style("stroke", "red")
-      .attr("d", valueline2);
+</script>
+<br>
+<input type="checkbox" name="small" value="0-4" onclick="color_circles('small')">Small (0-4
+cylinders)<br>
+<input type="checkbox" name="medium" value="6-8" onclick="color_circles('medium')">Medium (6-8
+cylinders)<br>
+<input type="checkbox" name="large" value="10-12" onclick="color_circles('large')">Large (10-12
+cylinders)<br>
+    <script>
 
-  // Add the X Axis
-  svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+var clicked = [false, false, false];
 
-  // Add the Y Axis
-  svg.append("g")
-      .call(d3.axisLeft(y));
+function color_circles(size) {
+    if (size == 'small') {
+        clicked[0] = !clicked[0];
+        apply_color(clicked);
+  }
+    else if (size == 'medium') {
+        clicked[1] = !clicked[1];
+        apply_color(clicked);
+    }
+    else if (size == 'large') {
+        clicked[2] = !clicked[2];
+        apply_color(clicked);
+    }
+}
 
-});
+function apply_color(clicked) {
+    if (clicked[0]) {
+        datapoints.selectAll('circle')
+            .filter(function(d) {return d.radius <= 4})
+            .style("fill", "red");
+    }
+    else {
+         datapoints.selectAll('circle')
+         .filter(function(d) {return d.radius <= 4})
+         .style("fill", "lightblue");
+    }
+
+    if (clicked[1]) {
+        datapoints.selectAll('circle')
+            .filter(function(d) {return d.radius > 4 && d.radius <= 8})
+            .style("fill", "orange");
+    }
+    else {
+         datapoints.selectAll('circle')
+         .filter(function(d) {return d.radius > 4 && d.radius <= 8})
+         .style("fill", "lightblue");
+    }
+
+    if (clicked[2]) {
+        datapoints.selectAll('circle')
+            .filter(function(d) {return d.radius > 8})
+            .style("fill", "purple");
+    }
+    else {
+         datapoints.selectAll('circle')
+         .filter(function(d) {return d.radius > 8})
+         .style("fill", "lightblue");
+    }
+}
+
+
+
 </script>
 </body>
 </html>
+
